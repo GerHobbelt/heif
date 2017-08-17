@@ -32,6 +32,7 @@ struct Metadata {
     uint8_t rows;
     uint8_t cols;    
     uint16_t rotation;
+    //uint32_t timestamp;
     vector<uint32_t> tileIndexes;
     vector<Blob> tileBlobs;
 };
@@ -59,7 +60,7 @@ vector<char> readFromStdin() {
 
 Metadata fetchMetadata(HevcImageFileReader &reader, uint32_t contextId) {
     ImageFileReaderInterface::GridItem gridItem;
-    ImageFileReaderInterface::IdVector gridItemIds;    
+    ImageFileReaderInterface::IdVector gridItemIds;
     Metadata metadata = {0,0,0};
 
     //get all grid items
@@ -79,6 +80,9 @@ Metadata fetchMetadata(HevcImageFileReader &reader, uint32_t contextId) {
         }
     }
 
+    //ImageFileReaderInterface::TimestampMap timestamps;
+    //reader.getItemTimestamps(contextId, timestamps);
+    //cout << timestamps << endl;
     return metadata;
 }
 
@@ -138,7 +142,7 @@ int main() {
     HevcImageFileReader reader;
     boost::interprocess::bufferstream input_stream(&buffer[0], buffer.size());
     reader.initialize(input_stream);
-
+    cout << "opened" << endl;
     // Verify that the file has one or several images in the MetaBox
     const auto& properties = reader.getFileProperties();
     if (!properties.fileFeature.hasFeature(ImageFileReaderInterface::FileFeature::HasSingleImage) && 

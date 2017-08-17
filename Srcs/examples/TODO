@@ -4,7 +4,7 @@ c++ -I/Users/erik/Documents/heif/Srcs/common -I/Users/erik/Documents/heif/Srcs/p
 //LINUX
 +c++ -lstdc++ -I/root/heif/build -I/root/heif/Srcs/common -I/root/heif/Srcs/parser -I/root/heif/Srcs/parser/avcparser -I/root/heif/Srcs/parser/h265parser -I/root/heif/Srcs/reader/ -I/root/heif/Srcs/writer -std=c++11 thumb_extractor.cpp.cpp -L/root/heif/Srcs/examples -Wl,--start-group -lcommon -lheifreader -lheifwriter -ljson -lavcparser -lh265parser -Wl,--end-group
 
-ffmpeg -i tile_1.h265 -i tile_2.h265 -i tile_3.h265 -i tile_4.h265 -filter_complex "nullsrc=size=1024x1024 [base];[0:v] setpts=PTS-STARTPTS, scale=512x512 [upperleft];[1:v] setpts=PTS-STARTPTS, scale=512x512 [upperright];[2:v] setpts=PTS-STARTPTS, scale=512x512 [lowerleft];[3:v] setpts=PTS-STARTPTS, scale=512x512 [lowerright];[base][upperleft] overlay=shortest=1 [tmp1];[tmp1][upperright] overlay=shortest=1:x=512 [tmp2];[tmp2][lowerleft] overlay=shortest=1:y=512 [tmp3];[tmp3][lowerright] overlay=shortest=1:x=512:y=512" -c:v libx264 output.h264
+ffmpeg -i 1 -loglevel debug -frames:v 1 -vsync vfr -q:v 1 -an 1.jpg
 
 
 montage tile_[1-48].h265.jpg -geometry 512x512 -border 0 -tile 8x6 final.jpg

@@ -35,8 +35,8 @@ def main():
 
     add_remaining_vars(heic_files)
 
-    '''if not post_heic_files_to_builder(heic_files):
-        return'''
+    if not post_heic_files_to_builder(heic_files):
+        return
 
     if not generate_photo_ids(heic_files):
         return
@@ -179,7 +179,7 @@ def generate_html(heic_files):
         small = "<img src=http://%s:%d/thumbs_no_jwt/%s/%s.s><br>\n" % (PHOTOSTORE_HOST, PHOTOSTORE_PORT, VERSION_PS, heic_file["ps_id"])
         medium = "<img src=http://%s:%d/thumbs_no_jwt/%s/%s.m><br>\n" % (PHOTOSTORE_HOST, PHOTOSTORE_PORT, VERSION_PS, heic_file["ps_id"])
         large = "<img src=http://%s:%d/thumbs_no_jwt/%s/%s.l><br>\n" % (PHOTOSTORE_HOST, PHOTOSTORE_PORT, VERSION_PS, heic_file["ps_id"])
-        html_file.write("<h1>" + heic_file["filename"] + "</h1>" + "<br>" + small + "<b>" + medium + "<br>" + large)
+        html_file.write("<h1>" + heic_file["filename"] + "</h1>" + "<br>" + small + "<br>" + medium + "<br>" + large)
 
     html_file.close()
     return True
