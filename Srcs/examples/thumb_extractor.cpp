@@ -32,7 +32,7 @@ struct Metadata {
     uint8_t rows;
     uint8_t cols;    
     uint16_t rotation;
-    //uint32_t timestamp;
+    uint32_t timestamp;
     vector<uint32_t> tileIndexes;
     vector<Blob> tileBlobs;
 };
@@ -61,7 +61,7 @@ vector<char> readFromStdin() {
 Metadata fetchMetadata(HevcImageFileReader &reader, uint32_t contextId) {
     ImageFileReaderInterface::GridItem gridItem;
     ImageFileReaderInterface::IdVector gridItemIds;
-    Metadata metadata = {0,0,0};
+    Metadata metadata = {};
 
     //get all grid items
     reader.getItemListByType(contextId, "grid", gridItemIds);
@@ -72,7 +72,7 @@ Metadata fetchMetadata(HevcImageFileReader &reader, uint32_t contextId) {
     metadata.cols = gridItem.columnsMinusOne;
 
     const uint32_t itemId = gridItemIds.at(0);
-    const auto itemProperties =  reader.getItemProperties(contextId, itemId);
+    const auto itemProperties = reader.getItemProperties(contextId, itemId);
     for (const auto& property : itemProperties) {
         // For example, handle 'irot' transformational property is anti-clockwise rotation
         if (property.type == ImageFileReaderInterface::ItemPropertyType::IROT) {
@@ -80,15 +80,12 @@ Metadata fetchMetadata(HevcImageFileReader &reader, uint32_t contextId) {
         }
     }
 
-    //ImageFileReaderInterface::TimestampMap timestamps;
-    //reader.getItemTimestamps(contextId, timestamps);
-    //cout << timestamps << endl;
     return metadata;
 }
 
 vector<uint32_t> getTileIndexes(HevcImageFileReader &reader, uint32_t contextId) {
     ImageFileReaderInterface::DataVector data;
-    ImageFileReaderInterface::IdVector masterItemIds;    
+    ImageFileReaderInterface::IdVector masterItemIds;
     vector<uint32_t> tileIndexes;
     reader.getItemListByType(contextId, "master", masterItemIds);
     for (const auto masterId : masterItemIds) {
@@ -142,7 +139,7 @@ int main() {
     HevcImageFileReader reader;
     boost::interprocess::bufferstream input_stream(&buffer[0], buffer.size());
     reader.initialize(input_stream);
-    cout << "opened" << endl;
+    
     // Verify that the file has one or several images in the MetaBox
     const auto& properties = reader.getFileProperties();
     if (!properties.fileFeature.hasFeature(ImageFileReaderInterface::FileFeature::HasSingleImage) && 
