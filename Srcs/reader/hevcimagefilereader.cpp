@@ -742,7 +742,7 @@ void HevcImageFileReader::getItemDataWithDecoderParameters(const uint32_t contex
 
     std::string codeType = getDecoderCodeType(contextId, itemId);
     //getDecoderParameterSets(contextId, itemId, parameterSet);
-    getDecoderParamteerSets(contextId, 1, parameterSet);
+    getDecoderParameterSets(contextId, 1, parameterSet);
 
     if ((codeType == "hvc1") || (codeType == "lhv1"))
     {
