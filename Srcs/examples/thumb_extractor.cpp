@@ -22,9 +22,6 @@
 using namespace std;
 using json = nlohmann::json;
 
-struct Blob {
-    vector<unsigned char> data;
-};
 
 struct Metadata {
     uint32_t width;
@@ -34,7 +31,8 @@ struct Metadata {
     uint16_t rotation;
     uint32_t timestamp;
     vector<uint32_t> tileIndexes;
-    vector<Blob> tileBlobs;
+    vector<vector<unsigned char>> tileBlobs;
+    vector<unsigned char> exif;
 };
 
 vector<char> readFromStdin() {
@@ -83,28 +81,34 @@ Metadata fetchMetadata(HevcImageFileReader &reader, uint32_t contextId) {
     return metadata;
 }
 
-vector<uint32_t> getTileIndexes(HevcImageFileReader &reader, uint32_t contextId) {
+vector<unsigned char> getExif(HevcImageFileReader &reader, uint32_t contextId) {
+    ImageFileReaderInterface::IdVector gridItemIds;
+    reader.getItemListByType(contextId, "grid", gridItemIds);
+    ImageFileReaderInterface::IdVector cdscItemIds;
+    reader.getReferencedToItemListByType(contextId, gridItemIds.at(0), "cdsc", cdscItemIds);
     ImageFileReaderInterface::DataVector data;
+    reader.getItemData(contextId, cdscItemIds.at(0), data);    
+    return data;
+} 
+
+vector<uint32_t> getTileIndexes(HevcImageFileReader &reader, uint32_t contextId) {
     ImageFileReaderInterface::IdVector masterItemIds;
     vector<uint32_t> tileIndexes;
     reader.getItemListByType(contextId, "master", masterItemIds);
     for (const auto masterId : masterItemIds) {
-        reader.getItemDataWithDecoderParameters(contextId, masterId, data);
         tileIndexes.push_back(masterId);
     } 
     return tileIndexes;
 }
 
-vector<Blob> getTileBlobs(HevcImageFileReader &reader, uint32_t contextId) {
+vector<vector<unsigned char>> getTileBlobs(HevcImageFileReader &reader, uint32_t contextId) {
     ImageFileReaderInterface::DataVector data;
     ImageFileReaderInterface::IdVector masterItemIds;    
-    vector<Blob> tileBlobs;
+    vector<vector<unsigned char>> tileBlobs;
     reader.getItemListByType(contextId, "master", masterItemIds);
     for (const auto masterId : masterItemIds) {
         reader.getItemDataWithDecoderParameters(contextId, masterId, data);
-        Blob blob;
-        blob.data = data;
-        tileBlobs.push_back(blob);
+        tileBlobs.push_back(data);
     } 
     return tileBlobs;
 }
@@ -117,9 +121,14 @@ void writeMetadataToDisk(Metadata metadata) {
     j["rows"] = metadata.rows+1;
     j["cols"] = metadata.cols+1;
     j["rotation"] = metadata.rotation;
-    ofstream ofile("metadata.json");
-    ofile << j;
-    ofile.close();
+    ofstream ofileMeta("metadata.json");
+    ofileMeta << j;
+    ofileMeta.close();
+
+    //exif
+    ofstream ofileExif("metadata.exif");
+    ofileExif.write((char*) &metadata.exif[0], metadata.exif.size());
+    ofileExif.close();    
 }
 
 void writeTilesToDisk(Metadata metadata) {
@@ -128,7 +137,7 @@ void writeTilesToDisk(Metadata metadata) {
         snprintf(buff, sizeof(buff), "%d", metadata.tileIndexes[i]);
         string tilename = buff;        
         ofstream ofile(tilename);
-        ofile.write((char*) &metadata.tileBlobs[i].data[0], metadata.tileBlobs[i].data.size());
+        ofile.write((char*) &metadata.tileBlobs[i][0], metadata.tileBlobs[i].size());
         ofile.close();
     }
 }
@@ -156,6 +165,8 @@ int main() {
     metadata.tileIndexes = getTileIndexes(reader, contextId);
 
     metadata.tileBlobs = getTileBlobs(reader, contextId);
+
+    metadata.exif = getExif(reader, contextId);
 
     if (metadata.tileIndexes.size() != metadata.tileBlobs.size()) {
         return 1;
