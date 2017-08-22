@@ -24,12 +24,8 @@ using json = nlohmann::json;
 
 
 struct Metadata {
-    uint32_t width;
-    uint32_t height;
     uint8_t rows;
     uint8_t cols;    
-    uint16_t rotation;
-    uint32_t timestamp;
     vector<uint32_t> tileIndexes;
     vector<vector<unsigned char>> tileBlobs;
     vector<unsigned char> exif;
@@ -64,19 +60,8 @@ Metadata fetchMetadata(HevcImageFileReader &reader, uint32_t contextId) {
     //get all grid items
     reader.getItemListByType(contextId, "grid", gridItemIds);
     gridItem = reader.getItemGrid(contextId, gridItemIds.at(0));
-    metadata.width = gridItem.outputWidth;
-    metadata.height = gridItem.outputHeight;
     metadata.rows = gridItem.rowsMinusOne;
     metadata.cols = gridItem.columnsMinusOne;
-
-    const uint32_t itemId = gridItemIds.at(0);
-    const auto itemProperties = reader.getItemProperties(contextId, itemId);
-    for (const auto& property : itemProperties) {
-        // For example, handle 'irot' transformational property is anti-clockwise rotation
-        if (property.type == ImageFileReaderInterface::ItemPropertyType::IROT) {
-            metadata.rotation = reader.getPropertyIrot(contextId, property.index).rotation;
-        }
-    }
 
     return metadata;
 }
@@ -116,12 +101,9 @@ vector<vector<unsigned char>> getTileBlobs(HevcImageFileReader &reader, uint32_t
 void writeMetadataToDisk(Metadata metadata) {
     json j;
     j["number_of_tiles"] = metadata.tileIndexes.size();
-    j["width"] = metadata.width;
-    j["height"] = metadata.height;
     j["rows"] = metadata.rows+1;
     j["cols"] = metadata.cols+1;
-    j["rotation"] = metadata.rotation;
-    ofstream ofileMeta("metadata.json");
+    ofstream ofileMeta("metadata_tiles.json");
     ofileMeta << j;
     ofileMeta.close();
 
