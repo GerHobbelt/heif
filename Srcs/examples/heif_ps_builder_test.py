@@ -17,6 +17,7 @@ TEST_USERNAME = "roland"
 PHOTOSTORE_HOST = "localhost"
 PHOTOSTORE_PORT = 8097
 VERSION_PS = "v1"
+HEIF_PATH = "/Users/erik/Jottacloud/HEIF"
 
 def main():
 
@@ -51,10 +52,10 @@ def main():
 
 def get_heic_files():
     heic_files = []
-    for (_, _, filenames) in walk("."):
+    for (_, _, filenames) in walk(HEIF_PATH):
         for filename in filenames:
             if ".HEIC" in filename.upper():
-                heic_file = {"filename": filename, "username": TEST_USERNAME}
+                heic_file = {"filename": HEIF_PATH + "/" + filename, "username": TEST_USERNAME}
                 heic_files.append(heic_file)
 
     return heic_files
@@ -114,7 +115,7 @@ def add_remaining_vars(heic_files):
     for heic_file in heic_files:
         heic_file["event_timestamp"] = int(round(time.time() * 1000))
         heic_file["modified"] = "%d" % int(round(time.time() * 1000))
-        heic_file["mimetype"] = "image/heif"
+        heic_file["mimetype"] = "image/heic"
         heic_file["source"] = "full_import"
         heic_file["created"] = "%d" % int(round(time.time() * 1000))
         heic_file["is_last"] = False
