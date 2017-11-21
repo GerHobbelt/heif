@@ -17,7 +17,8 @@ TEST_USERNAME = "roland"
 PHOTOSTORE_HOST = "localhost"
 PHOTOSTORE_PORT = 8097
 VERSION_PS = "v1"
-HEIF_PATH = "/Users/erik/Jottacloud/HEIF"
+#HEIF_PATH = "/Users/erik/Jottacloud/HEIF"
+HEIF_PATH = "/Users/erik/Documents/heif/Srcs/examples/HEIF/"
 
 def main():
 

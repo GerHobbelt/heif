@@ -17,19 +17,8 @@
 #include <iostream>
 #include <boost/interprocess/streams/bufferstream.hpp>
 #include <fstream>
-#include "json.hpp"
 
 using namespace std;
-using json = nlohmann::json;
-
-
-struct Metadata {
-    uint8_t rows;
-    uint8_t cols;    
-    vector<uint32_t> tileIndexes;
-    vector<vector<unsigned char>> tileBlobs;
-    vector<unsigned char> exif;
-};
 
 vector<char> readFromStdin() {
     char input[1024];
@@ -52,20 +41,6 @@ vector<char> readFromStdin() {
     return buffer;
 }
 
-Metadata fetchMetadata(HevcImageFileReader &reader, uint32_t contextId) {
-    ImageFileReaderInterface::GridItem gridItem;
-    ImageFileReaderInterface::IdVector gridItemIds;
-    Metadata metadata = {};
-
-    //get all grid items
-    reader.getItemListByType(contextId, "grid", gridItemIds);
-    gridItem = reader.getItemGrid(contextId, gridItemIds.at(0));
-    metadata.rows = gridItem.rowsMinusOne;
-    metadata.cols = gridItem.columnsMinusOne;
-
-    return metadata;
-}
-
 vector<unsigned char> getExif(HevcImageFileReader &reader, uint32_t contextId) {
     ImageFileReaderInterface::IdVector gridItemIds;
     reader.getItemListByType(contextId, "grid", gridItemIds);
@@ -76,52 +51,11 @@ vector<unsigned char> getExif(HevcImageFileReader &reader, uint32_t contextId) {
     return data;
 } 
 
-vector<uint32_t> getTileIndexes(HevcImageFileReader &reader, uint32_t contextId) {
-    ImageFileReaderInterface::IdVector masterItemIds;
-    vector<uint32_t> tileIndexes;
-    reader.getItemListByType(contextId, "master", masterItemIds);
-    for (const auto masterId : masterItemIds) {
-        tileIndexes.push_back(masterId);
-    } 
-    return tileIndexes;
-}
-
-vector<vector<unsigned char>> getTileBlobs(HevcImageFileReader &reader, uint32_t contextId) {
-    ImageFileReaderInterface::DataVector data;
-    ImageFileReaderInterface::IdVector masterItemIds;    
-    vector<vector<unsigned char>> tileBlobs;
-    reader.getItemListByType(contextId, "master", masterItemIds);
-    for (const auto masterId : masterItemIds) {
-        reader.getItemDataWithDecoderParameters(contextId, masterId, data);
-        tileBlobs.push_back(data);
-    } 
-    return tileBlobs;
-}
-
-void writeMetadataToDisk(Metadata metadata) {
-    json j;
-    j["number_of_tiles"] = metadata.tileIndexes.size();
-    j["rows"] = metadata.rows+1;
-    j["cols"] = metadata.cols+1;
-    ofstream ofileMeta("metadata_tiles.json");
-    ofileMeta << j;
-    ofileMeta.close();
-
+void writeExif(vector<unsigned char> exif) {
     //exif
     ofstream ofileExif("metadata.exif");
-    ofileExif.write((char*) &metadata.exif[0], metadata.exif.size());
-    ofileExif.close();    
-}
-
-void writeTilesToDisk(Metadata metadata) {
-    for (size_t i = 0; i < metadata.tileIndexes.size(); i++) {
-        char buff[100];
-        snprintf(buff, sizeof(buff), "%d", metadata.tileIndexes[i]);
-        string tilename = buff;        
-        ofstream ofile(tilename);
-        ofile.write((char*) &metadata.tileBlobs[i][0], metadata.tileBlobs[i].size());
-        ofile.close();
-    }
+    ofileExif.write((char*) &exif[0], exif.size());
+    ofileExif.close();
 }
 
 int main() {
@@ -142,21 +76,9 @@ int main() {
     // Find the item ID of the first master image
     const uint32_t contextId = properties.rootLevelMetaBoxProperties.contextId;
 
-    auto metadata = fetchMetadata(reader, contextId);
+    auto exif = getExif(reader, contextId);
 
-    metadata.tileIndexes = getTileIndexes(reader, contextId);
-
-    metadata.tileBlobs = getTileBlobs(reader, contextId);
-
-    metadata.exif = getExif(reader, contextId);
-
-    if (metadata.tileIndexes.size() != metadata.tileBlobs.size()) {
-        return 1;
-    }
-
-    writeMetadataToDisk(metadata);
-
-    writeTilesToDisk(metadata);
+    writeExif(exif);
 
     cout << "All done!" << endl;
 
