@@ -224,7 +224,7 @@ static void aom_init_parameters()
   p->integer.have_minimum_maximum = true;
   p->integer.minimum = 0;
   if (aom_codec_version_major() >= 3) {
-    p->integer.maximum = 9;
+    p->integer.maximum = 11;
   }
   else {
     p->integer.maximum = 8;
