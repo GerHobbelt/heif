@@ -972,7 +972,9 @@ struct heif_error aom_encode_image(void* encoder_raw, const struct heif_image* i
   }
 
   // TODO: set AV1E_SET_TILE_ROWS and AV1E_SET_TILE_COLUMNS.
+  aom_codec_control(&codec, AV1E_SET_TILE_ROWS, 4);
 
+  aom_codec_control(&codec, AV1E_SET_TILE_COLUMNS, 4);
 
   struct heif_color_profile_nclx* nclx = nullptr;
   err = heif_image_get_nclx_color_profile(image, &nclx);
