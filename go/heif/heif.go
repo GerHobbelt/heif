@@ -464,6 +464,12 @@ func (e *Encoder) SetLoggingLevel(l LoggingLevel) error {
 	return convertHeifError(err)
 }
 
+func (e *Encoder) SetChroma(value string) error {
+	err := C.heif_encoder_set_parameter_string(e.encoder, C.CString("chroma"), C.CString(value));
+	runtime.KeepAlive(e)
+	return convertHeifError(err)
+}
+
 func freeHeifEncoder(enc *Encoder) {
 	C.heif_encoder_release(enc.encoder)
 	enc.encoder = nil
@@ -1193,7 +1199,7 @@ type EncodingOptions struct {
 
 func NewEncodingOptions() (*EncodingOptions, error) {
 	options := &EncodingOptions{
-		options: C.heif_encoding_options_alloc(),
+		options: C.heif_encoding_options_alloc_rgb(),
 	}
 	if options.options == nil {
 		return nil, fmt.Errorf("Could not allocate encoding options")
@@ -1345,6 +1351,7 @@ func imageFromYCbCr(i *image.YCbCr) (*Image, error) {
 func EncodeFromImage(img image.Image, compression Compression, quality int, lossless LosslessMode, logging LoggingLevel) (*Context, error) {
 	var out *Image
 
+	var isRgba bool
 	switch i := img.(type) {
 	default:
 		return nil, fmt.Errorf("unsupported image type: %T", i)
@@ -1354,12 +1361,14 @@ func EncodeFromImage(img image.Image, compression Compression, quality int, loss
 			return nil, fmt.Errorf("failed to create image: %v", err)
 		}
 		out = tmp
+		isRgba = true
 	case *image.RGBA64:
 		tmp, err := imageFromRGBA64(i)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create image: %v", err)
 		}
 		out = tmp
+		isRgba = true
 	case *image.Gray:
 		tmp, err := imageFromGray(i)
 		if err != nil {
@@ -1392,6 +1401,11 @@ func EncodeFromImage(img image.Image, compression Compression, quality int, loss
 	}
 	if err := enc.SetLoggingLevel(logging); err != nil {
 		return nil, fmt.Errorf("failed to set logging level: %v", err)
+	}
+	if isRgba && lossless == LosslessModeEnabled {
+		if err := enc.SetChroma(Chroma444); err != nil {
+			return nil, fmt.Errorf("failed to set chroma level: %v", err)
+		}
 	}
 
 	encOpts, err := NewEncodingOptions()

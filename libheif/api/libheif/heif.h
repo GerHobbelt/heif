@@ -2111,6 +2111,9 @@ LIBHEIF_API
 struct heif_encoding_options* heif_encoding_options_alloc(void);
 
 LIBHEIF_API
+struct heif_encoding_options* heif_encoding_options_alloc_rgb(void);
+
+LIBHEIF_API
 void heif_encoding_options_free(struct heif_encoding_options*);
 
 

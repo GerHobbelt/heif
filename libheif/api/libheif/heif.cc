@@ -2789,6 +2789,18 @@ heif_encoding_options* heif_encoding_options_alloc()
   return options;
 }
 
+heif_encoding_options* heif_encoding_options_alloc_rgb()
+{
+  auto options = new heif_encoding_options;
+
+  set_default_options(*options);
+
+  options->output_nclx_profile = heif_nclx_color_profile_alloc();
+  options->output_nclx_profile->matrix_coefficients = heif_matrix_coefficients_RGB_GBR;
+
+  return options;
+}
+
 
 void heif_encoding_options_free(heif_encoding_options* options)
 {
