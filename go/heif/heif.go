@@ -363,6 +363,10 @@ const (
 	SuberrorTooManyRegions = C.heif_suberror_Too_many_regions
 )
 
+const (
+	heifChroma444 = "444"
+)
+
 type HeifError struct {
 	Code    ErrorCode
 	Subcode ErrorSubcode
@@ -1403,7 +1407,7 @@ func EncodeFromImage(img image.Image, compression Compression, quality int, loss
 		return nil, fmt.Errorf("failed to set logging level: %v", err)
 	}
 	if isRgba && lossless == LosslessModeEnabled {
-		if err := enc.SetChroma(Chroma444); err != nil {
+		if err := enc.SetChroma(heifChroma444); err != nil {
 			return nil, fmt.Errorf("failed to set chroma level: %v", err)
 		}
 	}
