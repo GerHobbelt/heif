@@ -22,6 +22,7 @@
 #include "idgenerators.hpp"
 #include "mediadatabox.hpp"
 #include "metabox.hpp"
+#include "miafchecker.hpp"
 #include "moviebox.hpp"
 #include "writerdatatypesinternal.hpp"
 
@@ -294,6 +295,8 @@ namespace HEIF
         bool mWriteItemCreationTimes = false;  ///< Create and associate CreationTimeProperty to added image items.
 
         PropertyId mPredRrefPropertyId = 0;  ///< ID of 'pred' Required reference types property. 0 if not created.
+
+        friend MIAF::MiafChecker;
     };
 
     namespace

@@ -32,6 +32,7 @@ endif()
 
 set(WRITER_SRCS
     idgenerators.cpp
+    miafchecker.cpp
     refsgroup.cpp
     samplegroup.cpp
     timeutility.cpp
@@ -61,6 +62,7 @@ set(API_HDRS
 set(WRITER_HDRS
     fileoutputstream.hpp
     idgenerators.hpp
+    miafchecker.hpp
     refsgroup.hpp
     samplegroup.hpp
     timeutility.hpp
