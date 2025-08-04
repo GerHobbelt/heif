@@ -11,6 +11,8 @@
  * written consent of Nokia.
  */
 
+#if !defined(_WIN32)
+
 #include "heifstreamlinux.hpp"
 
 #include <errno.h>
@@ -190,3 +192,5 @@ namespace HEIF
         return m_size;
     }
 }  // namespace HEIF
+
+#endif // !defined(_WIN32)

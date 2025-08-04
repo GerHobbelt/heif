@@ -13,6 +13,8 @@
 
 #include <fstream>
 
+#if !defined(_WIN32)
+
 #include "OutputStreamInterface.h"
 #include "customallocator.hpp"
 #include "fileoutputstream.hpp"
@@ -83,3 +85,5 @@ namespace HEIF
         return aFile;
     }
 }  // namespace HEIF
+
+#endif // !defined(_WIN32)
